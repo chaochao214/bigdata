@@ -1,0 +1,8 @@
+1.通过IO流操作HDFS
+2. HDFS写数据流程
+3. HDFS读数据流程
+4. NameNode&Secondary NameNode工作机制
+5.DataNode工作机制
+6.模拟namenode故障，并采用任一方法，恢复namenode数据
+7.服役新节点
+8.退役旧节点

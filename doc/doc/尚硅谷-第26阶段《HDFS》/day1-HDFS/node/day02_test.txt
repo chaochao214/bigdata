@@ -1,0 +1,10 @@
+1、按照如下要求搭建集群
+Hadoop102			hadoop103			hadoop104
+
+HDFS											
+              			SecondaryNameNode 		NameNode
+DataNode			DataNode			DataNode
+	
+YARN	
+ResourceManager			NodeManager			NodeManager
+NodeManager
