@@ -1,0 +1,80 @@
+电信项目：
+	一、数据生产
+		** 讨论数据结构
+		** 生产数据
+			** 随机产生通话建立的时间
+			** 写出日志时，每一条日志都要flush()
+	二、数据消费（保存）
+	** Kafka接受Flume实时递交进来的数据
+			情景：
+				** 数据安全性要求高
+				** 下游消费者众多
+			操作：
+				** 启动zookeeper
+					~/modules/zookeeper-3.4.5/bin/zkServer.sh start
+				** 配置kafka文件：server.properties
+				** 启动3台kafka的broker服务
+					~/modules/kafka_2.11-0.11.0.2/bin/kafka-server-start.sh ~/modules/kafka_2.11-0.11.0.2/config/server.properties
+				** 创建主题（带有分区的）
+					bin/kafka-topics.sh --zookeeper linux01:2181 --topic calllog --create --replication-factor 1 --partitions 3
+				** 验证主题正确性：--list
+					bin/kafka-topics.sh --zookeeper linux01:2181 --list
+				** 准备配置flume
+	** Flume采集实时写入到文件的数据
+			情景：
+				** 适用于采集文件中的数据
+				** 适用于数据安全性要求不高的数据
+				** 适用于下游消费者不多的情况
+			操作：
+				** 配置flume的job的conf(参考资料文件夹)
+				** 启动flume
+					bin/flume-ng agent --conf conf/ --name a1 --conf-file /home/atguigu/call/flume-kafka.conf
+				** 打包数据生产者的jar包到linux的calllog目录下
+				** 启动kafka控制台消费者用于测试
+					bin/kafka-console-consumer.sh --zookeeper h:2181 --topic calllog --from-beginning
+				** 启动生产数据的任务
+					java -cp ct_producer-1.0-SNAPSHOT.jar producer.ProductLog /home/admin/calllog/calllog.csv
+		
+		** HBase实时保存一条一条流入的数据
+			情景：
+				** 适用于在线业务
+				** 适用于离线业务
+				** 适用于非结构化数据
+				** 适用于结构化数据
+	** Kafka API编写完成，成功进行了控制台数据实时展示
+	** HBase API操作
+	** 整个消费阶段完成，打成Jar包，运行测试：
+		java -Djava.ext.dirs=/home/admin/calllog/kafka_hbase_lib/ -cp ct_consumer-1.0-SNAPSHOT.jar kafka.HBaseConsumer
+	三、数据分析
+	四、数据展示
+
+第一天思路梳理：
+生产日志 ->  Flume采集 -> Kafka采集 -> KafkaAPI的控制台展示 -> HBase（创建命名空间，创建表）
+-> TableMapper -> Reducer -> Mysql(每天分析的数据，都要覆盖之前的数据) -> WebServer -> WebFont
+																					-> Mobile
+
+caller	callee	buildTime duration
+
+最终结果：
+	1、按照年，月，日，统计通话次数
+	2、按照年，月，日，统计通话时长
+
+
+15837312345		2017-01-01~2017-03-01
+
+
+[2017-01-01,2017-02-01)
+startRow  genRegionCode(15837312345, 201701, 6)_15837312345_201701
+stopRow   genRegionCode(15837312345, 201702, 6)_15837312345_201702
+
+
+[2017-02-01,2017-03-01]
+
+05_19902496992_20170312154840_15542823911_1_1288
+
+
+协处理器的使用：
+1、编写代码extends BaseRegionObserver
+2、打包.jar
+3、重新创建表，将表在创建的时候，挂载该协处理器
+4、表挂载协处理器的时候，会去Hbase的根目录下的lib目录下的jar包里，找到你刚才注册协处理器的类的路径

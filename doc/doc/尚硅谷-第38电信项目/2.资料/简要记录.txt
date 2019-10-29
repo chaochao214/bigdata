@@ -1,0 +1,87 @@
+第一天：
+提示：不要使用maven3.5，有部分bug，使用maven-3.3.9
+1、生成日志代码编写
+
+2、创建kafka主题
+/home/admin/modules/kafka_2.10-0.8.2.1/bin/kafka-server-start.sh /home/admin/modules/kafka_2.10-0.8.2.1/config/server.properties
+/home/admin/modules/kafka_2.10-0.8.2.1/bin/kafka-topics.sh --zookeeper linux01:2181 --topic calllog --create --replication-factor 1 --partitions 4
+/home/admin/modules/kafka_2.10-0.8.2.1/bin/kafka-topics.sh --zookeeper linux01:2181 --list
+
+(/home/admin/modules/kafka_2.10-0.8.2.1/bin/kafka-topics.sh --zookeeper linux01:2181 --topic calllog --delete)
+(~/modules/cdh/zookeeper-3.4.5-cdh5.3.6/bin/zkCli.sh -server linux01:2181,linux02:2181,linux03:2181)
+(/admin/delete_topics目录下的主题删除)
+3、启动控制台消费者测试kafka的calllog主题的数据
+/home/admin/modules/kafka_2.10-0.8.2.1/bin/kafka-console-consumer.sh --zookeeper linux01:2181 --topic calllog --from-beginning
+4、编写flume配置文件，实时收集calllog日志文件（进入flume根目录下）
+bin/flume-ng agent --conf conf/ --name a1 --conf-file jobs/flume-exec-kafka.conf
+
+# define
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# source
+a1.sources.r1.type = exec
+a1.sources.r1.command = tail -F -c +0 /home/admin/call/calllog.csv
+a1.sources.r1.shell = /bin/bash -c
+
+# sink
+a1.sinks.k1.type = org.apache.flume.sink.kafka.KafkaSink
+a1.sinks.k1.brokerList = linux01:9092,linux02:9092,linux03:9092
+a1.sinks.k1.topic = calllog
+a1.sinks.k1.batchSize = 20
+a1.sinks.k1.requiredAcks = 1
+
+# channel
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# bind
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+
+5、编写Java代码consumer，并测试
+6、编写hbase协处理器以及数据写入过程
+http://www.aboutyun.com/thread-15051-1-1.html
+
+<property>
+   <name>hbase.coprocessor.user.region.classes</name>
+   <value>org.apache.hadoop.hbase.coprocessor.AggregateImplementation</value>
+</property>
+7、向kafka.properties文件中添加HBase表名的属性
+8、封装PropertiesUtil
+9、设计rowkey
+15596505995,17519874292,2017-03-11 00:30:19,0652
+15064972307,18944239644,2017-08-27 07:12:11,0593
+18839074540,19877232369,2017-05-18 20:01:18,0451
+
+caller	callee	date	duration
+
+10、完善HbaseDAO
+完善后执行，出现如下错误：
+http://blog.csdn.net/jiecxy/article/details/53369173
+
+
+11、使用mvn命令下载工程所有依赖的软件包
+mvn -DoutputDirectory=./lib -DgroupId=com.china -DartifactId=ct_consumer -Dversion=0.0.1-SNAPSHOT dependency:copy-dependencies
+
+12、导出kafka-hbase消费者到
+java -cp F:\maven-lib\ct_consumer-0.0.1-SNAPSHOT.jar;F:\maven-lib\lib\activation-1.1.jar;F:\maven-lib\lib\apacheds-i18n-2.0.0-M15.jar;F:\maven-lib\lib\apacheds-kerberos-codec-2.0.0-M15.jar;F:\maven-lib\lib\api-asn1-api-1.0.0-M20.jar;F:\maven-lib\lib\api-util-1.0.0-M20.jar;F:\maven-lib\lib\asm-3.1.jar;F:\maven-lib\lib\avro-1.7.6-cdh5.3.6.jar;F:\maven-lib\lib\commons-beanutils-1.7.0.jar;F:\maven-lib\lib\commons-beanutils-core-1.8.0.jar;F:\maven-lib\lib\commons-cli-1.2.jar;F:\maven-lib\lib\commons-codec-1.7.jar;F:\maven-lib\lib\commons-collections-3.2.1.jar;F:\maven-lib\lib\commons-compress-1.4.1.jar;F:\maven-lib\lib\commons-configuration-1.6.jar;F:\maven-lib\lib\commons-daemon-1.0.13.jar;F:\maven-lib\lib\commons-digester-1.8.jar;F:\maven-lib\lib\commons-el-1.0.jar;F:\maven-lib\lib\commons-httpclient-3.1.jar;F:\maven-lib\lib\commons-io-2.4.jar;F:\maven-lib\lib\commons-lang-2.6.jar;F:\maven-lib\lib\commons-logging-1.1.1.jar;F:\maven-lib\lib\commons-math-2.1.jar;F:\maven-lib\lib\commons-math3-3.1.1.jar;F:\maven-lib\lib\commons-net-3.1.jar;F:\maven-lib\lib\core-3.1.1.jar;F:\maven-lib\lib\curator-client-2.6.0.jar;F:\maven-lib\lib\curator-framework-2.6.0.jar;F:\maven-lib\lib\curator-recipes-2.6.0.jar;F:\maven-lib\lib\findbugs-annotations-1.3.9-1.jar;F:\maven-lib\lib\gson-2.2.4.jar;F:\maven-lib\lib\guava-12.0.1.jar;F:\maven-lib\lib\hadoop-annotations-2.5.0-cdh5.3.6.jar;F:\maven-lib\lib\hadoop-auth-2.5.0-cdh5.3.6.jar;F:\maven-lib\lib\hadoop-common-2.5.0-cdh5.3.6.jar;F:\maven-lib\lib\hadoop-core-2.5.0-mr1-cdh5.3.6.jar;F:\maven-lib\lib\hadoop-hdfs-2.5.0-cdh5.3.6.jar;F:\maven-lib\lib\hadoop-hdfs-2.5.0-cdh5.3.6-tests.jar;F:\maven-lib\lib\hbase-client-0.98.6-cdh5.3.6.jar;F:\maven-lib\lib\hbase-common-0.98.6-cdh5.3.6.jar;F:\maven-lib\lib\hbase-common-0.98.6-cdh5.3.6-tests.jar;F:\maven-lib\lib\hbase-hadoop2-compat-0.98.6-cdh5.3.6.jar;F:\maven-lib\lib\hbase-hadoop-compat-0.98.6-cdh5.3.6.jar;F:\maven-lib\lib\hbase-prefix-tree-0.98.6-cdh5.3.6.jar;F:\maven-lib\lib\hbase-protocol-0.98.6-cdh5.3.6.jar;F:\maven-lib\lib\hbase-server-0.98.6-cdh5.3.6.jar;F:\maven-lib\lib\high-scale-lib-1.1.1.jar;F:\maven-lib\lib\hsqldb-1.8.0.10.jar;F:\maven-lib\lib\htrace-core-2.04.jar;F:\maven-lib\lib\httpclient-4.2.5.jar;F:\maven-lib\lib\httpcore-4.1.2.jar;F:\maven-lib\lib\jackson-core-asl-1.8.8.jar;F:\maven-lib\lib\jackson-jaxrs-1.8.8.jar;F:\maven-lib\lib\jackson-mapper-asl-1.8.8.jar;F:\maven-lib\lib\jackson-xc-1.7.1.jar;F:\maven-lib\lib\jamon-runtime-2.3.1.jar;F:\maven-lib\lib\jasper-compiler-5.5.23.jar;F:\maven-lib\lib\jasper-runtime-5.5.23.jar;F:\maven-lib\lib\java-xmlbuilder-0.4.jar;F:\maven-lib\lib\jaxb-api-2.1.jar;F:\maven-lib\lib\jaxb-impl-2.2.3-1.jar;F:\maven-lib\lib\jdk.tools-1.6.jar;F:\maven-lib\lib\jersey-core-1.8.jar;F:\maven-lib\lib\jersey-json-1.8.jar;F:\maven-lib\lib\jersey-server-1.8.jar;F:\maven-lib\lib\jets3t-0.9.0.jar;F:\maven-lib\lib\jettison-1.1.jar;F:\maven-lib\lib\jetty-6.1.26.cloudera.4.jar;F:\maven-lib\lib\jetty-sslengine-6.1.26.cloudera.4.jar;F:\maven-lib\lib\jetty-util-6.1.26.cloudera.4.jar;F:\maven-lib\lib\jopt-simple-3.2.jar;F:\maven-lib\lib\jsch-0.1.42.jar;F:\maven-lib\lib\jsp-2.1-6.1.14.jar;F:\maven-lib\lib\jsp-api-2.1.jar;F:\maven-lib\lib\jsp-api-2.1-6.1.14.jar;F:\maven-lib\lib\jsr305-1.3.9.jar;F:\maven-lib\lib\junit-3.8.1.jar;F:\maven-lib\lib\kafka_2.10-0.8.2.1.jar;F:\maven-lib\lib\kafka-clients-0.8.2.1.jar;F:\maven-lib\lib\log4j-1.2.17.jar;F:\maven-lib\lib\lz4-1.2.0.jar;F:\maven-lib\lib\metrics-core-2.2.0.jar;F:\maven-lib\lib\netty-3.6.6.Final.jar;F:\maven-lib\lib\paranamer-2.3.jar;F:\maven-lib\lib\protobuf-java-2.5.0.jar;F:\maven-lib\lib\scala-library-2.10.4.jar;F:\maven-lib\lib\servlet-api-2.5.jar;F:\maven-lib\lib\servlet-api-2.5-6.1.14.jar;F:\maven-lib\lib\show.bat;F:\maven-lib\lib\slf4j-api-1.7.5.jar;F:\maven-lib\lib\slf4j-log4j12-1.7.5.jar;F:\maven-lib\lib\snappy-java-1.1.1.6.jar;F:\maven-lib\lib\xmlenc-0.52.jar;F:\maven-lib\lib\xz-1.0.jar;F:\maven-lib\lib\zkclient-0.3.jar;F:\maven-lib\lib\zookeeper-3.4.5-cdh5.3.6.jar; com.china.ct_consumer.kafka.HBaseConsumer
+或者:
+java -cp F:\maven-lib\ct_consumer-0.0.1-SNAPSHOT.jar;F:\maven-lib\lib\* com.china.ct_consumer.kafka.HBaseConsumer
+或者：
+java -Djava.ext.dirs=F:\maven-lib\lib\ -cp F:\maven-lib\ct_consumer-0.0.1-SNAPSHOT.jar com.china.ct_consumer.kafka.HBaseConsumer
+
+13、属性配置文件外部化
+kafka.properties放在外边单独配置（不要把kafka.properties打包的jar里边），需要重新修改代码，找到该文件
+执行命令：
+java -Djava.ext.dirs=F:\maven-lib\lib\ -cp F:\maven-lib\ct_consumer-0.0.1-SNAPSHOT.jar;F:\maven-lib\conf\ com.china.ct_consumer.kafka.HBaseConsumer
+
+14、创建Java web工程
+
+
+第二天：
+协处理器
+$ scp -r conf/ linux03:/home/admin/modules/cdh/hbase-0.98.6-cdh5.3.6/
+$ scp ~/softwares/jars/ct_consumer-1.0-SNAPSHOT.jar linux02:/home/admin/modules/cdh/hbase-0.98.6-cdh5.3.6/lib/

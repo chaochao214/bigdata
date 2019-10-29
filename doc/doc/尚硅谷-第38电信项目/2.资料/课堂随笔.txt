@@ -1,0 +1,188 @@
+电信项目：
+    一、idea项目构建
+        1、安装jdk并配置环境变量
+        2、安装maven，解压离线仓库，并设置settings
+            ** conf目录下的setttings.xml文件复制到离线仓库的m2目录下，并修改mirror标签以及离线仓库路径。
+            ** 设置idea工具的maven选项，涉及到4个地方：work offline,以及3个maven设置吧。注意留意：override选项。
+        3、新建ct主项目目录(相当于eclipse的workset)
+            ** 一个项目对应一个文件夹，举例：
+                workspace：
+                    ct：
+                        ct_producer：
+                            该项目的各种包
+                        ct_analysis：
+                            该项目的各种包
+        4、新建ct_producer 模块，用于数据生产代码的编写或构建
+            ** 构建该项目选择maven，ct项目下所有的模块（module）都是maven工程。（maven要是用3.3.9的）
+        5、设置常用选项
+            ** 取消idea自动打开之前项目的功能（搜索reopen，关闭相关标签即可）
+            ** 设置字体大小（Editor——font——size）进行设置
+            ** 设置字符编码：搜索：encoding，3个位置全部改为utf-8
+            ** 自动导包以及自动提示设置(搜索auto，设置自动导包为ask，代码自动提示为first letter)
+        尖叫提示：
+            ** idea-setttings设置的是当前项目的配置（只针对当前项目生效）
+            ** idea-file-others-default settings设置的是全局默认配置（也就是说，以后新建项目都是按照这个默认配置）
+    二、数据生产
+        1、新建Producer.java
+            ** 初始化联系人集合用于随机数据使用
+            ** 随机两个电话号码
+            ** 随机通话建立的时间，返回String，格式：yyyy-MM-dd HH:mm:ss
+            ** 随机通话持续时间
+
+            ** 将产生的数据写入到本地磁盘中(日志文件)
+    三、数据消费（数据存储）
+        flume：cloudera公司研发
+            适合下游数据消费者不多的情况；
+            适合数据安全性要求不高的操作；
+            适合与Hadoop生态圈对接的操作。
+        kafka：linkedin公司研发·
+            适合数据下游消费众多的情况；
+            适合数据安全性要求较高的操作（支持replication）；
+        1、安装运行zookeeper
+        2、安装配置kafka，此时我使用的版本是2.10-0821
+            ** 修改server.properties
+        3、启动kafka集群
+            ** 启动kafka集群，分别在3台机器上执行：
+                $ /home/admin/modules/kafka_2.10-0.8.2.1/bin/kafka-server-start.sh /home/admin/modules/kafka_2.10-0.8.2.1/config/server.properties
+            ** 创建kafka主题：calllog
+                $ /home/admin/modules/kafka_2.10-0.8.2.1/bin/kafka-topics.sh --zookeeper linux01:2181 --topic calllog --create --replication-factor 1 --partitions 4
+            ** 查看主题列表
+                $ /home/admin/modules/kafka_2.10-0.8.2.1/bin/kafka-topics.sh --zookeeper linux01:2181 --list
+            ** 启动kafka控制台消费者，用于测试
+                $ /home/admin/modules/kafka_2.10-0.8.2.1/bin/kafka-console-consumer.sh --zookeeper linux01:2181 --topic calllog --from-beginning
+    
+        4、配置flume，用于监听实时产生的数据文件
+            ** 创建flume的job配置文件
+                尖叫提示：由于在配置flume的过程中，涉及到了数据监听读取方式的操作“tail -F -c +0”，即每次读取完整的文件，所以
+                修改了java代码中，输出流的写出方式为：非追加，即覆盖文件。
+            ** 启动flume服务，注意，该语句需要进如flume跟目录下执行
+                $ bin/flume-ng agent --conf conf/ --name a1 --conf-file jobs/flume-kafka.conf 
+        5、生产日志
+        6、使用Java KafkaAPI读取Kafka中缓存的数据
+            ** 通过https://mvnrepository.com/网站找到你需要使用的依赖
+            ** 导入依赖
+            ** 建立包结构
+        7、成功拿到数据之后，使用Java HBaseAPI将数据放入
+            ** 拿到一条数据，我要把这条数据放到Hbase表中
+                ** 创建表（粘！）
+                ** 突然发现没有命名空间，粘命名空间初始化方法（粘！）
+                ** 预分区键生成的方法（粘！）
+                ** 创建rowkey的分区号
+                ** 创建rowkey
+                ** 使用Put对象插入数据，需要rowkey
+        8、写入数据到HBase中
+            ** 先确保表是成功创建的
+            ** 检查Hbase各个节点均为正常，通过浏览器60010查看
+            ** maven导包，不要导错了，不要重复导包，不要导错版本
+            ** 代码逻辑执行顺序要注意
+            ** 超时时间设置：
+                *** kafka根目录下的config目录下，修改server.properties文件对于zookeeper超时时间的限定
+                *** 项目的resoureces目录下的kafka.properties文件中，关于zookeeper超时的设置。
+                以上两个值，设置都稍大一些，比如50000
+            ** 思路没有捋清楚：
+                1、创建命名空间
+                2、创建表（不要先不要添加协处理器）（注意，需要预分区）
+                3、创建rowkey生成方法
+                4、创建预分区号生成方法
+                5、在HBaseDAO中的构造方法里，初始化命名空间，初始化表（注意判断表是否存在）
+                6、在HBaseDAO中创建put方法，用于存放数据
+                7、在kafka取得数据时，使用HbaseDAO的实例化对象，调用put方法，将数据存入即可。
+        9、优化数据存储方案：使用协处理器
+            1、同一条数据，存储两遍。
+                rowkey：实现了针对某个人，查询该人范围时间内的所有通话记录
+                    分区号 + call1 + dateTime + call2 + flag + duration
+                    15837312345_20170101000000_13733991234
+            2、讨论使用协处理器的原因
+            3、操作过程
+                ** 创建协处理器类：CalleeWriteObserver extends BaseRegionObserver
+                ** 覆写postPut方法
+                ** 编写代码一大堆（实现将被叫数据存入）
+                ** 创建表方法中：表述器中添加你成功创建的协处理器
+                ** 修改resources中hbase-site.xml配置文件
+                ** 打包
+                ** 将包分别放于3台机器中的hbase根目录中的lib目录下
+                ** 3台机器中的hbase-site.xml文件注册协处理器
+                ** 重启hbase
+                ** 测试
+                ** 如果测试成功，记得把表初始化一下
+            4、打包，执行消费数据方法
+                方式一：
+                    java -Djava.ext.dirs=./lib/ -cp ct_consumer.jar com.china.kafka.HBaseConsumer
+                方式二：
+                    windows:java -cp ./lib/*;ct_consumer.jar com.china.kafka.HBaseConsumer
+                    linux:java -cp ./lib/*:ct_consumer.jar com.china.kafka.HBaseConsumer
+            5、idea打包，并提交到linux执行
+                ** 打包，并将打好的包以及第三方依赖整个拷贝出来
+                ** 上传该文件夹（ct_consumer_jar）到linux中
+                ** 运行：java -Djava.ext.dirs=./lib/ -cp ct_consumer.jar com.china.kafka.HBaseConsumer
+            6、某个用户，传入指定的时间范围，查询该时间范围内的该用户的所有通话记录（包含主叫和被叫）
+                15837312345 2017-01-01 2017-05-01
+                rowkey：01_15837312345_20171102181630_13737312345_1_0180
+                ** scan.setStartRow
+                        2017-01-01
+                ** scan.setStopRow
+                        2017-02-01
+                ** 组装rowkey
+                    01_15837312345_201711
+                    01_15837312345_201712
+            7、Filter测试讲解
+    四、数据分析
+        1、统计所有用户每月通话记录（通话次数，通话时长）
+        2、统计所有用户每日通话记录（通话次数，通话时长）
+        3、导入Mysql建表语句（db_telecom.sql）
+        4、新建项目，构建包结构，创建能够想到的需要使用的类，不需要任何实现
+        5、整理思路：
+            ** Key：电话号码 + 时间
+            ** Value：本次通话（1） + 通话时间
+        6、复习第三天内容：
+            ** 构建数据分析项目
+            ** 构建数据表结构
+            ** Mapper、Reducer
+            ** 封装各种JavaBean，KeyClasss\ValueCalss
+            ** 自定义OutPutformat（对数据的操作）
+            ** 根据维度数据查询数据库得到已有维度id（如果没有则新增一条，并返回id，封装convert）
+                （考虑数据插入时批处理）
+            ** 工具类：
+                *** JDBCUtil
+                *** LRUCache
+            ** Runner组装Job任务
+                ** 初始化Mapper
+                    ** 设置键值对class
+                ** 初始化Reducer
+                    ** 设置键值对class
+                ** 设置outputforamt
+                ** 提交运行job
+
+            ** 配置文件拷贝到resources文件夹中
+            ** 运行测试
+                问题总结：
+                    1、ComDimension构造方法中，实例化时间维度和联系人维度对象。
+                    2、MySQLOutputformat的close方法中，没有关闭资源，关闭：JDBCUtil.close(conn, preparedStatement, null);
+                    3、Runner，Mapper，Reducer中的泛型，不要使用抽象类
+                    4、DimensionConverter中的genSQL方法写反了，需要调换位置。
+                    5、DimensionConverter中设置JVM退出时，关闭资源，如下：Runtime.getRuntime().addShutdownHook(new Thread(() -> JDBCUtil.close(threadLocal.get(), null, null)));
+                    6、Mysql的url连接一定要是具体的主机名或者IP地址
+                    7、DimensionConverter中的close方法关闭数据库连接
+                    8、调试时，打包jar，上传到linux，拔掉网线，进行测试。
+                    9、数据库连接到底何时关闭，要梳理清楚。解决 Too many connections;
+                        MySQLOutputformat -- MysqlRecordWriter -- DimensionConverter
+                    10、mysql-driver包没有导入成功
+    五、数据展示
+        1、展示数据所需要的字段都有哪些：
+            call_sum,call_duration_sum,telephone,name,year,month,day
+        2、通话通话次数与通话时长，展示用户关系。
+        3、通过表格，展示一个人当年所有的话单信息。
+
+Kafka问题修复：
+    初始化zookeeper
+
+IDEA常用快捷键：
+    alt + enter：智能修复
+    ctrl + alt + v：自动生成当前对象名
+    ctrl + alt + t：自动呼出包裹菜单
+    ctrl + o：呼出覆写菜单
+    ctrl + alt + l：格式化代码
+    ctrl + shift + enter：自动补全当前行代码缺失的符号
+
+IDEA方式打包工程：
+    File--project stru-- arti--点击加号--copy to the output....--ok--ok--build--rebuild
