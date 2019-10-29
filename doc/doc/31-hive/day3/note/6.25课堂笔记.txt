@@ -1,0 +1,34 @@
+#6.25课堂笔记
+
+“在实际企业应用场景中  不要用select *    而是把全部字段都打出来 —— ” （子查询的别名）
+
+hive  中 两个大小   256M   1099
+
+6.5.4   sort by  和  order  by 都使用的话  还是1个reducer   ，还会把reducer 的个数改回去。
+
+分区字段 和 排序字段   ？  可以一致 也可不一致？
+假如  partition 设置为1.2.3.4.  reduce设置为4个； 也会报错，4找不到    mapreduce 自己命名 是从0开始的
+
+只用sort 的时候是按照什么分区的?  随机按照一个字段分区的 框架自动完成  目的是为了避免数据倾斜
+
+**ed  只有在健表语句中才会有
+
+6.6.2   x 所在的桶 一定会抽到  ；  x+y的桶  一定会被抽到；
+
+#下午
+
+case  when   then   else  end     先练成绩的案例  得 优的有多少人
+
+udaf聚合    udtf拆分
+
+
+over  是给每一行数据开了一个窗口
+
+
++++++++++++++++++++++++++++++++++++++++++++++
+distributed  by  和 partional by   的区别？
+sort   和 order   的区别  ？ 
+两两组合  4组
+ 
+后面加sort by的时候 是一样的  
+而order by 体现出了区别    distribute  by + order  by  运行不了
