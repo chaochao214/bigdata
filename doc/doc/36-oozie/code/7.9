@@ -1,0 +1,57 @@
+tar -zxvf /opt/software/cdh/oozie-4.0.0-cdh5.3.6.tar.gz -C /opt/module/cdh
+
+tar -zxvf oozie-hadooplibs-4.0.0-cdh5.3.6.tar.gz -C ../
+mkdir libext/
+cp -ra hadooplibs/hadooplib-2.5.0-cdh5.3.6.oozie-4.0.0-cdh5.3.6/* libext/
+cp -a /opt/software/mysql-connector-java-5.1.27/mysql-connector-java-5.1.27-bin.jar ./libext/
+cp -a /opt/software/cdh/ext-2.2.zip libext/
+
+3.2.8 
+3.2.8(1)  时间戳很重要  如果删除yarn。tar。gz 解压的文件  那此步之后的都要重做
+
+
+bootstrap  和 runjar   都是通用的名字  
+
+
+
+/opt/module/cdh/hadoop-2.5.0-cdh5.3.6/sbin/start-dfs.sh
+
+/opt/module/cdh/hadoop-2.5.0-cdh5.3.6/sbin/start-yarn.sh
+
+/opt/module/cdh/hadoop-2.5.0-cdh5.3.6/sbin/mr-jobhistory-daemon.sh start historyserver
+
+/opt/module/cdh/oozie-4.0.0-cdh5.3.6/bin/oozied.sh start
+/opt/module/cdh/oozie-4.0.0-cdh5.3.6/bin/oozied.sh stop
+
+
+/opt/module/cdh/hadoop-2.5.0-cdh5.3.6/
+
+/opt/module/cdh/hadoop-2.5.0-cdh5.3.6/bin/hadoop fs -rm -r /user/atguigu/oozie-apps
+
+/opt/module/cdh/hadoop-2.5.0-cdh5.3.6/bin/hadoop fs -put oozie-apps/ /user/atguigu
+/opt/module/cdh/hadoop-2.5.0-cdh5.3.6/bin/hadoop fs -put shell2/ /user/atguigu/oozie-apps
+
+bin/oozie job -oozie http://hadoop102:11000/oozie -config oozie-apps/shell/job.properties -run
+
+
+bin/oozie job -oozie http://hadoop102:11000/oozie -kill 0000000-180709144927352-oozie-atgu-W
+
+
+ 
+JA017: Unknown hadoop job [job_local899327553_0002] associated with action [0000001-180709161005011-oozie-atgu-W@shell-node].  Failing this action!
+
+bin/oozie-setup.sh sharelib create -fs hdfs://hadoop102:9000 -locallib oozie-sharelib-4.0.0-cdh5.3.6-yarn.tar.gz
+
+
+
+
+<property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+</property>
+
+改了两处  1.core-site  hadoop.tmp.dir   加上了tmp    2. yarn-site 去掉了文档中的那一组<property>  
+
+cp -a /opt/software/mysql-connector-java-5.1.27/mysql-connector-java-5.1.27-bin.jar ./libext/
+
+bin/oozie-setup.sh sharelib create -fs hdfs://hadoop102:9000 -locallib oozie-sharelib-4.0.0-cdh5.3.6-yarn.tar.gz
