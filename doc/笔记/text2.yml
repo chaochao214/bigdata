@@ -1,0 +1,84 @@
+#cdh hadoop
+/twc/pac/cdh/hadoop/sbin/start-all.sh
+/twc/pac/cdh/hadoop/sbin/stop-all.sh
+
+java -cp ct_producer-1.0-SNAPSHOT.jar com.twc.ProduceLog D:/test/callLog.csv
+
+java -cp ct_producer-1.0-SNAPSHOT.jar com.twc.ProduceLog /twc/pac/call/callLog.csv
+D:\test
+
+#zookeeper 启动和配置
+/twc/pac/zookeeper/bin/zkServer.sh start
+
+/twc/pac/zookeeper/bin/zkServer.sh stop
+/twc/pac/zookeeper/bin/zkServer.sh status
+
+
+#启动kafka
+
+/twc/pac/kafka/bin/kafka-server-start.sh /twc/pac/kafka/config/server.properties
+#停止kafka 
+/twc/pac/kafka/bin/kafka-server-stop.sh
+/twc/pac/kafka/bin/kafka-console-consumer.sh --zookeeper hadoop01:2181 --topic calllog --from-beginning
+
+bin/kafka-server-start.sh config/server.properties
+#创建kafka主题
+ /twc/pac/kafka/bin/kafka-topics.sh --zookeeper hadoop01:2181 --topic calllog --create --replication-factor 1  --partitions 3
+ 
+ /twc/pac/kafka/bin/kafka-topics.sh --zookeeper hadoop01:2181 --topic test2 --create --replication-factor 1  --partitions 3
+ 
+ 
+ /twc/pac/kafka/bin/kafka-topics.sh --zookeeper hadoop01:2181 --topic calllog --create --replication-factor 1  --partitions 3
+ /twc/pac/kafka/bin/kafka-topics.sh --create --bootstrap-server hadoop001:9092 --replication-factor 3 --partitions 1 --topic my-replicated-topic
+ /twc/pac/kafka/bin/kafka-console-consumer.sh --zookeeper hadoop01:2181 --topic calllog --from-beginning
+ 
+ 
+ /twc/pac/kafka/bin/kafka-topics.sh --zookeeper hadoop01:2181 --create --replication-factor 1 --partitions 3 --topic first
+ 
+ /twc/pac/kafka/bin/kafka-console-producer.sh --broker-list hadoop01:9092 --topic first
+
+ /twc/kafka/bin/kafka-topics.sh --describe --bootstrap-server linux01:9092 --topic test
+ 
+ #
+    #测试主题
+    /twc/pac/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 3 --topic test
+     
+     
+     
+     #删除主题
+    /twc/pac/kafka/bin/kafka-topics.sh  --delete --zookeeper localhost:2181  --topic test
+    /twc/pac/kafka/bin/kafka-topics.sh --list --zookeeper localhost:2181
+    /twc/kafka/bin/kafka-topics.sh --list --zookeeper localhost:2181
+    
+    # 生产数据
+    /twc/pac/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 -topic test
+    # 消费数据
+    /twc/pac/kafka/
+     /twc/pac/kafka/bin/kafka-console-consumer.sh \--zookeeper hadoop01:2181 --from-beginning --topic test
+     /twc/pac/kafka/bin/kafka-console-consumer.sh \--zookeeper localhost:2181 --from-beginning --topic test
+     /twc/kafka/bin/kafka-console-consumer.sh \--zookeeper linux01:2181 --from-beginning --topic test
+ /twc/pac/kafka/bin/kafka-topics.sh --zookeeper hadoop01:2181 --create --replication-factor 3 --partitions 1 --topic first
+    # 
+ /twc/pac/flume/conf/
+ # flume 启动  
+ /twc/pac/flume/bin/flume-ng agent --conf conf/ --name a1 --conf-file  /twc/pac/flume/conf/flume-kafka.conf
+ /twc/pac/flume/bin/flume-ng agent --conf conf/ --name a1 --conf-file  /twc/pac/flume/conf/exec2kafka.conf
+    
+ #produceLog 
+ java -cp /twc/produceLog/ct_producer-1.0-SNAPSHOT.jar com.twc.ProduceLog /twc/produceLog/callLog.csv
+ #bug
+ ./twc/produceLog/producelog.sh
+
+#查看9092端口占用情况 
+netstat -anp|grep 9092
+ 
+ 
+#github kafka
+
+bin/kafka-topics.sh --create --bootstrap-server hadoop01:9092 --replication-factor 3  --partitions 1 --topic my-replicated-topic 
+  
+  advertised.host.name = hadoop01
+  advertised.listeners = hadoop01
+  advertised.port = 9092
+
+   
