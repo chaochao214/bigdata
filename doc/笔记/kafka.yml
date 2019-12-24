@@ -2,14 +2,14 @@
 /twc/pac/cdh/hadoop/sbin/start-all.sh
 /twc/pac/cdh/hadoop/sbin/stop-all.sh
 
+#calllog
 java -cp ct_producer-1.0-SNAPSHOT.jar com.twc.ProduceLog D:/test/callLog.csv
 
 java -cp ct_producer-1.0-SNAPSHOT.jar com.twc.ProduceLog /twc/pac/call/callLog.csv
 D:\test
 
-#zookeeper 启动和配置
+#zookeeper
 /twc/pac/zookeeper/bin/zkServer.sh start
-
 /twc/pac/zookeeper/bin/zkServer.sh stop
 /twc/pac/zookeeper/bin/zkServer.sh status
 

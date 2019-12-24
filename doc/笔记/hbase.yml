@@ -1,0 +1,18 @@
+#zookeeper
+    /twc/pac/zookeeper/bin/zkServer.sh start
+    /twc/pac/zookeeper/bin/zkServer.sh stop
+    /twc/pac/zookeeper/bin/zkServer.sh status
+#cdh hadoop
+    /twc/pac/cdh/hadoop/sbin/start-all.sh
+    /twc/pac/cdh/hadoop/sbin/stop-all.sh
+#hbase 
+   #启动
+  /twc/pac/hbase/bin/start-hbase.sh
+   #关闭
+   /twc/pac/hbase/bin/stop-hbase.sh
+   #软连接
+    ln -s /twc/pac/hadoop/etc/hadoop/core-site.xml  /twc/pac/hbase/conf/core-site.xml
+    ln -s /twc/pac/hadoop/etc/hadoop/hdfs-site.xml  /twc/pac/hbase/conf/hdfs-site.xml
+   
+
+      
