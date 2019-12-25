@@ -15,4 +15,7 @@
     ln -s /twc/pac/hadoop/etc/hadoop/hdfs-site.xml  /twc/pac/hbase/conf/hdfs-site.xml
    
 
-      
+   #检测端口占用 60020
+   netstat -antp|grep 60020
+   #查看端口打开情况     
+   netstat -tpnl     
