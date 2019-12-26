@@ -1,0 +1,8 @@
+
+
+#启动
+#cdh hadoop
+/twc/pac/hadoop/sbin/start-all.sh
+/twc/pac/hadoop/sbin/stop-all.sh
+#上传文件
+ hadoop fs -put /twc/readme.md  /test
