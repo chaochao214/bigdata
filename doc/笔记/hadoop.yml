@@ -1,8 +1,12 @@
-
+# 单机安装
+https://github.com/heibaiying/BigData-Notes/blob/master/notes/installation/Hadoop%E5%8D%95%E6%9C%BA%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA.md
+#初始化
+/twc/pac/hadoop/bin/hdfs namenode -format
 
 #启动
-#cdh hadoop
+#hadoop
 /twc/pac/hadoop/sbin/start-all.sh
 /twc/pac/hadoop/sbin/stop-all.sh
 #上传文件
  hadoop fs -put /twc/readme.md  /test
+ 

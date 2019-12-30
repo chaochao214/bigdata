@@ -1,6 +1,6 @@
 #cdh hadoop
-/twc/pac/cdh/hadoop/sbin/start-all.sh
-/twc/pac/cdh/hadoop/sbin/stop-all.sh
+/twc/pac/hadoop/sbin/start-all.sh
+/twc/pac/hadoop/sbin/stop-all.sh
 
 #calllog
 java -cp ct_producer-1.0-SNAPSHOT.jar com.twc.ProduceLog D:/test/callLog.csv
@@ -23,7 +23,7 @@ D:\test
 
 bin/kafka-server-start.sh config/server.properties
 #创建kafka主题
- /twc/pac/kafka/bin/kafka-topics.sh --zookeeper hadoop01:2181 --topic calllog --create --replication-factor 1  --partitions 3
+ /twc/pac/kafka/bin/kafka-topics.sh --zookeeper twc:2181 --topic calllog --create --replication-factor 1  --partitions 3
  
  /twc/pac/kafka/bin/kafka-topics.sh --zookeeper hadoop01:2181 --topic test2 --create --replication-factor 1  --partitions 3
  
@@ -41,7 +41,7 @@ bin/kafka-server-start.sh config/server.properties
  
  #
     #测试主题
-    /twc/pac/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 3 --topic test
+    /twc/pac/kafka/bin/kafka-topics.sh --create --zookeeper twc:2181 --replication-factor 1 --partitions 3 --topic test
      
      
      
@@ -51,12 +51,12 @@ bin/kafka-server-start.sh config/server.properties
     /twc/kafka/bin/kafka-topics.sh --list --zookeeper localhost:2181
     
     # 生产数据
-    /twc/pac/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 -topic test
+    /twc/pac/kafka/bin/kafka-console-producer.sh --broker-list twc:9092 -topic test
     # 消费数据
-    /twc/pac/kafka/
+    /twc/pac/kafka/ /twc/pac/kafka/bin/kafka-console-consumer.sh \--zookeeper localhost:2181 --from-beginning --topic test
      /twc/pac/kafka/bin/kafka-console-consumer.sh \--zookeeper hadoop01:2181 --from-beginning --topic test
-     /twc/pac/kafka/bin/kafka-console-consumer.sh \--zookeeper localhost:2181 --from-beginning --topic test
-     /twc/kafka/bin/kafka-console-consumer.sh \--zookeeper linux01:2181 --from-beginning --topic test
+    
+     /twc/pac/afka/bin/kafka-console-consumer.sh  --zookeeper twc:2181 --from-beginning --topic test
  /twc/pac/kafka/bin/kafka-topics.sh --zookeeper hadoop01:2181 --create --replication-factor 3 --partitions 1 --topic first
     # 
  /twc/pac/flume/conf/
